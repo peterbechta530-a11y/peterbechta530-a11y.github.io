@@ -30,7 +30,7 @@
       text-shadow: 2px 2px 5px #000;
     }
 
-    #admin-btn {
+    #admin-btn, #save-btn {
       background: #00ff88;
       border: none;
       padding: 10px 20px;
@@ -40,10 +40,15 @@
       color: #000;
       font-weight: bold;
       transition: 0.3s;
+      margin-left: 10px;
     }
 
-    #admin-btn:hover {
+    #admin-btn:hover, #save-btn:hover {
       background: #00cc66;
+    }
+
+    #save-btn {
+      display: none;
     }
 
     table {
@@ -85,7 +90,10 @@
 <body>
   <header>
     <h1>🏆 Minecraft Leaderboard 🏆</h1>
-    <button id="admin-btn">Admin</button>
+    <div>
+      <button id="admin-btn">Admin</button>
+      <button id="save-btn">Save</button>
+    </div>
   </header>
 
   <table id="leaderboard">
@@ -97,7 +105,6 @@
       </tr>
     </thead>
     <tbody>
-      <!-- 5 empty slots -->
       <tr><td>1</td><td class="name"></td><td class="points"></td></tr>
       <tr><td>2</td><td class="name"></td><td class="points"></td></tr>
       <tr><td>3</td><td class="name"></td><td class="points"></td></tr>
@@ -109,10 +116,9 @@
   <script>
     const PASSWORD = "0029";
     const adminBtn = document.getElementById("admin-btn");
-    const table = document.getElementById("leaderboard");
-    const rows = table.querySelectorAll("tbody tr");
+    const saveBtn = document.getElementById("save-btn");
+    const rows = document.querySelectorAll("#leaderboard tbody tr");
 
-    // Load data from localStorage
     function loadData() {
       const saved = JSON.parse(localStorage.getItem("leaderboardData")) || [];
       saved.forEach((entry, i) => {
@@ -123,16 +129,15 @@
       });
     }
 
-    // Save data to localStorage
     function saveData() {
       const data = Array.from(rows).map(row => ({
         name: row.querySelector(".name").textContent.trim(),
         points: row.querySelector(".points").textContent.trim()
       }));
       localStorage.setItem("leaderboardData", JSON.stringify(data));
+      alert("Leaderboard saved!");
     }
 
-    // Admin editing mode
     adminBtn.addEventListener("click", () => {
       const pass = prompt("Enter admin passcode:");
       if (pass === PASSWORD) {
@@ -162,30 +167,25 @@
         pointsCell.appendChild(pointsInput);
       });
 
-      adminBtn.textContent = "Save";
-      adminBtn.onclick = () => {
-        rows.forEach(row => {
-          const nameInput = row.querySelector(".name input");
-          const pointsInput = row.querySelector(".points input");
-          row.querySelector(".name").textContent = nameInput.value;
-          row.querySelector(".points").textContent = pointsInput.value;
-        });
-        saveData();
-        adminBtn.textContent = "Admin";
-        adminBtn.onclick = null;
-        adminBtn.addEventListener("click", () => {
-          const pass = prompt("Enter admin passcode:");
-          if (pass === PASSWORD) {
-            enableEditing();
-          } else if (pass) {
-            alert("Wrong password!");
-          }
-        });
-      };
+      saveBtn.style.display = "inline-block";
+      adminBtn.disabled = true;
     }
+
+    saveBtn.addEventListener("click", () => {
+      rows.forEach(row => {
+        const nameInput = row.querySelector(".name input");
+        const pointsInput = row.querySelector(".points input");
+        row.querySelector(".name").textContent = nameInput.value;
+        row.querySelector(".points").textContent = pointsInput.value;
+      });
+
+      saveData();
+
+      saveBtn.style.display = "none";
+      adminBtn.disabled = false;
+    });
 
     loadData();
   </script>
 </body>
 </html>
-
